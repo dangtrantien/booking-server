@@ -4,6 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const compression = require('compression');
 
 const adminRoutes = require('./routes/admin');
 const hotelRoutes = require('./routes/hotel');
@@ -16,6 +17,7 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
+app.use(compression());
 
 app.use('/admin', adminRoutes);
 app.use('/hotels', hotelRoutes);
@@ -31,7 +33,6 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(
     `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@assignment-02.cjvlxke.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}`
-    // 'mongodb+srv://tiendtfx22706:alive%3Fdead@assignment-02.cjvlxke.mongodb.net/hotel?retryWrites=true&w=majority'
   )
   .then((result) => app.listen(process.env.PORT || 5000))
   .catch((err) => console.log(err));
