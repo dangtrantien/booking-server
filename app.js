@@ -14,10 +14,9 @@ const userRoutes = require('./routes/user');
 
 const app = express();
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(compression());
 app.use(bodyParser.json());
 app.use(cors());
-app.use(compression());
 
 app.use('/admin', adminRoutes);
 app.use('/hotels', hotelRoutes);
