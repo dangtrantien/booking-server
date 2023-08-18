@@ -99,21 +99,9 @@ exports.getBalances = (req, res, next) => {
 exports.getRecentTransactions = (req, res, next) => {
   Transaction.find()
     .populate('user hotel')
-    .then((transactions) => {
-      const recentList = [];
-
-      // Sắp xếp theo thời gian khởi tạo giảm dần
-      const sortedList = transactions.sort((a, b) => b.createdAt - a.createdAt);
-
-      for (let i = 0; i < 8; i++) {
-        if (sortedList[i]) {
-          recentList.push(sortedList[i]);
-        }
-      }
-
-      return recentList;
-    })
-    .then((result) => res.status(200).json(result))
+    .limit(8)
+    .sort({ createdAt: -1 })
+    .then((transactions) => res.status(200).json(transactions))
     .catch((err) => {
       if (!err.statusCode) {
         err.statusCode = 500;
