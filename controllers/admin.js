@@ -4,20 +4,33 @@ const User = require('../models/User');
 const Hotel = require('../models/Hotel');
 const Room = require('../models/Room');
 const Transaction = require('../models/Transaction');
-const paging = require('../util/paging');
 
 // ==================================================
 
 // Lấy tất cả các data của các user từ database
 exports.getUsers = (req, res, next) => {
-  User.find()
-    .then((users) => {
-      const userList = paging(users);
+  const page = req.query.page;
+  const limit = req.query.limit;
+  let skip;
 
-      res.status(200).json({
-        total: users.length,
-        result: userList,
-      });
+  if (page) {
+    skip = (page - 1) * limit;
+  }
+
+  User.find()
+    .skip(skip)
+    .limit(limit)
+    .sort({ createdAt: -1 })
+    .then((users) => {
+      if (users.length === 0) {
+        const error = new Error("There's no more user!");
+
+        error.statusCode = 404;
+
+        throw error;
+      }
+
+      res.status(200).json(users);
     })
     .catch((err) => {
       if (!err.statusCode) {
@@ -112,15 +125,29 @@ exports.getRecentTransactions = (req, res, next) => {
 
 // Lấy tất cả các data của các hotel từ database
 exports.getHotels = (req, res, next) => {
+  const page = req.query.page;
+  const limit = req.query.limit;
+  let skip;
+
+  if (page) {
+    skip = (page - 1) * limit;
+  }
+
   Hotel.find()
     .populate('rooms')
+    .skip(skip)
+    .limit(limit)
+    .sort({ createdAt: -1 })
     .then((hotels) => {
-      const hotelList = paging(hotels);
+      if (hotels.length === 0) {
+        const error = new Error("There's no more hotel!");
 
-      res.status(200).json({
-        total: hotels.length,
-        result: hotelList,
-      });
+        error.statusCode = 404;
+
+        throw error;
+      }
+
+      res.status(200).json(hotels);
     })
     .catch((err) => {
       if (!err.statusCode) {
@@ -369,14 +396,28 @@ exports.deleteHotel = (req, res, next) => {
 
 // Lấy tất cả các data của các room từ database
 exports.getRooms = (req, res, next) => {
-  Room.find()
-    .then((rooms) => {
-      const roomList = paging(rooms);
+  const page = req.query.page;
+  const limit = req.query.limit;
+  let skip;
 
-      res.status(200).send({
-        total: rooms.length,
-        result: roomList,
-      });
+  if (page) {
+    skip = (page - 1) * limit;
+  }
+
+  Room.find()
+    .skip(skip)
+    .limit(limit)
+    .sort({ createdAt: -1 })
+    .then((rooms) => {
+      if (rooms.length === 0) {
+        const error = new Error("There's no more room!");
+
+        error.statusCode = 404;
+
+        throw error;
+      }
+
+      res.status(200).send(rooms);
     })
     .catch((err) => {
       if (!err.statusCode) {
@@ -640,15 +681,29 @@ exports.deleteRoom = (req, res, next) => {
 
 // Lấy tất cả các data của các transaction từ database
 exports.getTransactions = (req, res, next) => {
+  const page = req.query.page;
+  const limit = req.query.limit;
+  let skip;
+
+  if (page) {
+    skip = (page - 1) * limit;
+  }
+
   Transaction.find()
     .populate('user hotel')
+    .skip(skip)
+    .limit(limit)
+    .sort({ createdAt: -1 })
     .then((transactions) => {
-      const transactionList = paging(transactions);
+      if (transactions.length === 0) {
+        const error = new Error("There's no more transaction!");
 
-      res.status(200).json({
-        total: transactions.length,
-        result: transactionList,
-      });
+        error.statusCode = 404;
+
+        throw error;
+      }
+
+      res.status(200).json(transactions);
     })
     .catch((err) => {
       if (!err.statusCode) {
