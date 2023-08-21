@@ -9,6 +9,7 @@ const Room = require('../models/Room');
 // Lấy data của các hotel từ database
 exports.getHotels = (req, res, next) => {
   Hotel.find()
+    .sort({ createdAt: -1 })
     .then((hotels) => res.status(200).json(hotels))
     .catch((err) => {
       if (!err.statusCode) {
@@ -55,6 +56,7 @@ exports.getCity = (req, res, next) => {
   const city = req.query.city;
 
   Hotel.find({ city: city })
+    .sort({ createdAt: -1 })
     .then((hotels) => res.status(200).json(hotels))
     .catch((err) => {
       if (!err.statusCode) {
@@ -70,6 +72,7 @@ exports.getType = (req, res, next) => {
   const type = req.query.type;
 
   Hotel.find({ type: type })
+    .sort({ createdAt: -1 })
     .then((hotels) => res.json(hotels))
     .catch((err) => {
       if (!err.statusCode) {
@@ -83,16 +86,9 @@ exports.getType = (req, res, next) => {
 // Lấy data của các hotel theo top-rating từ database
 exports.getTopRating = (req, res, next) => {
   Hotel.find()
-    .then((hotels) => {
-      const topRatingList = [];
-
-      // Sắp xếp theo rating giảm dần
-      const sortedList = hotels.sort((a, b) => b.rating - a.rating);
-
-      topRatingList.push(sortedList[0], sortedList[1], sortedList[2]);
-
-      return res.json(topRatingList);
-    })
+    .sort({ rating: -1 })
+    .limit(3)
+    .then((hotels) => res.json(hotels))
     .catch((err) => {
       if (!err.statusCode) {
         err.statusCode = 500;
@@ -243,6 +239,7 @@ exports.getRoomById = (req, res, next) => {
 exports.getTransactions = (req, res, next) => {
   Transaction.find({ user: req.userId })
     .populate('user hotel')
+    .sort({ createdAt: -1 })
     .then((transactions) => res.status(200).json(transactions))
     .catch((err) => {
       if (!err.statusCode) {
@@ -296,7 +293,7 @@ exports.postTransaction = (req, res, next) => {
     .save()
     .then((result) => {
       // Update room sau khi user booking
-      result.room.map((r) => {
+      result.room.forEach((r) => {
         Room.findById(r.roomId)
           .then((room) => room.removeFromRoomNumbers(r.roomNumber))
           .catch((err) => {
