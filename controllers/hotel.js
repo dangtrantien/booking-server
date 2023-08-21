@@ -293,9 +293,9 @@ exports.postTransaction = (req, res, next) => {
     .save()
     .then((result) => {
       // Update room sau khi user booking
-      result.room.forEach((r) => {
-        Room.findById(r.roomId)
-          .then((room) => room.removeFromRoomNumbers(r.roomNumber))
+      for (let i = 0; i < result.room.length; i++) {
+        Room.findById(result.room[i].roomId)
+          .then((r) => r.removeFromRoomNumbers(result.room[i].roomNumber))
           .catch((err) => {
             if (!err.statusCode) {
               err.statusCode = 500;
@@ -303,7 +303,7 @@ exports.postTransaction = (req, res, next) => {
 
             next(err);
           });
-      });
+      }
 
       res.status(200).json(result);
     })
