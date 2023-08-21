@@ -70,7 +70,7 @@ exports.getType = (req, res, next) => {
   const type = req.query.type;
 
   Hotel.find({ type: type })
-    .then((hotels) => res.send(hotels))
+    .then((hotels) => res.json(hotels))
     .catch((err) => {
       if (!err.statusCode) {
         err.statusCode = 500;
@@ -91,7 +91,7 @@ exports.getTopRating = (req, res, next) => {
 
       topRatingList.push(sortedList[0], sortedList[1], sortedList[2]);
 
-      return res.send(topRatingList);
+      return res.json(topRatingList);
     })
     .catch((err) => {
       if (!err.statusCode) {

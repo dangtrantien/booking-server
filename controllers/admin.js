@@ -9,29 +9,38 @@ const Transaction = require('../models/Transaction');
 
 // Lấy tất cả các data của các user từ database
 exports.getUsers = (req, res, next) => {
-  const page = req.query.page;
-  const limit = req.query.limit;
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
   let skip;
 
-  if (page) {
+  if (page >= 1 && limit) {
     skip = (page - 1) * limit;
   }
 
-  User.find()
-    .skip(skip)
-    .limit(limit)
-    .sort({ createdAt: -1 })
-    .then((users) => {
-      if (users.length === 0) {
-        const error = new Error("There's no more user!");
-
-        error.statusCode = 404;
-
-        throw error;
-      }
-
-      res.status(200).json(users);
-    })
+  User.aggregate([
+    {
+      $facet: {
+        data: [
+          {
+            $sort: { createdAt: -1 },
+          },
+          {
+            $skip: skip,
+          },
+          {
+            $limit: limit,
+          },
+        ],
+        totalCount: [{ $count: 'totalCount' }],
+      },
+    },
+  ])
+    .then((users) =>
+      res.status(200).json({
+        data: users[0].data,
+        total: users[0].totalCount[0].totalCount,
+      })
+    )
     .catch((err) => {
       if (!err.statusCode) {
         err.statusCode = 500;
@@ -99,8 +108,8 @@ exports.getBalances = (req, res, next) => {
 exports.getRecentTransactions = (req, res, next) => {
   Transaction.find()
     .populate('user hotel')
-    .limit(8)
     .sort({ createdAt: -1 })
+    .limit(8)
     .then((transactions) => res.status(200).json(transactions))
     .catch((err) => {
       if (!err.statusCode) {
@@ -113,30 +122,46 @@ exports.getRecentTransactions = (req, res, next) => {
 
 // Lấy tất cả các data của các hotel từ database
 exports.getHotels = (req, res, next) => {
-  const page = req.query.page;
-  const limit = req.query.limit;
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
   let skip;
 
-  if (page) {
+  if (page >= 1 && limit) {
     skip = (page - 1) * limit;
   }
 
-  Hotel.find()
-    .populate('rooms')
-    .skip(skip)
-    .limit(limit)
-    .sort({ createdAt: -1 })
-    .then((hotels) => {
-      if (hotels.length === 0) {
-        const error = new Error("There's no more hotel!");
-
-        error.statusCode = 404;
-
-        throw error;
-      }
-
-      res.status(200).json(hotels);
-    })
+  Hotel.aggregate([
+    {
+      $facet: {
+        data: [
+          {
+            $sort: { createdAt: -1 },
+          },
+          {
+            $skip: skip,
+          },
+          {
+            $limit: limit,
+          },
+          {
+            $lookup: {
+              from: 'rooms',
+              localField: 'rooms',
+              foreignField: '_id',
+              as: 'rooms',
+            },
+          },
+        ],
+        totalCount: [{ $count: 'totalCount' }],
+      },
+    },
+  ])
+    .then((hotels) =>
+      res.status(200).json({
+        data: hotels[0].data,
+        total: hotels[0].totalCount[0].totalCount,
+      })
+    )
     .catch((err) => {
       if (!err.statusCode) {
         err.statusCode = 500;
@@ -372,7 +397,7 @@ exports.deleteHotel = (req, res, next) => {
 
       return Hotel.findByIdAndRemove(hotelId);
     })
-    .then(() => res.status(200).send({ message: 'Successfully deleted!' }))
+    .then(() => res.status(200).json({ message: 'Successfully deleted!' }))
     .catch((err) => {
       if (!err.statusCode) {
         err.statusCode = 500;
@@ -384,29 +409,38 @@ exports.deleteHotel = (req, res, next) => {
 
 // Lấy tất cả các data của các room từ database
 exports.getRooms = (req, res, next) => {
-  const page = req.query.page;
-  const limit = req.query.limit;
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
   let skip;
 
-  if (page) {
+  if (page >= 1 && limit) {
     skip = (page - 1) * limit;
   }
 
-  Room.find()
-    .skip(skip)
-    .limit(limit)
-    .sort({ createdAt: -1 })
-    .then((rooms) => {
-      if (rooms.length === 0) {
-        const error = new Error("There's no more room!");
-
-        error.statusCode = 404;
-
-        throw error;
-      }
-
-      res.status(200).send(rooms);
-    })
+  Room.aggregate([
+    {
+      $facet: {
+        data: [
+          {
+            $sort: { createdAt: -1 },
+          },
+          {
+            $skip: skip,
+          },
+          {
+            $limit: limit,
+          },
+        ],
+        totalCount: [{ $count: 'totalCount' }],
+      },
+    },
+  ])
+    .then((rooms) =>
+      res.status(200).json({
+        data: rooms[0].data,
+        total: rooms[0].totalCount[0].totalCount,
+      })
+    )
     .catch((err) => {
       if (!err.statusCode) {
         err.statusCode = 500;
@@ -669,30 +703,54 @@ exports.deleteRoom = (req, res, next) => {
 
 // Lấy tất cả các data của các transaction từ database
 exports.getTransactions = (req, res, next) => {
-  const page = req.query.page;
-  const limit = req.query.limit;
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
   let skip;
 
-  if (page) {
+  if (page >= 1 && limit) {
     skip = (page - 1) * limit;
   }
 
-  Transaction.find()
-    .populate('user hotel')
-    .skip(skip)
-    .limit(limit)
-    .sort({ createdAt: -1 })
-    .then((transactions) => {
-      if (transactions.length === 0) {
-        const error = new Error("There's no more transaction!");
-
-        error.statusCode = 404;
-
-        throw error;
-      }
-
-      res.status(200).json(transactions);
-    })
+  Transaction.aggregate([
+    {
+      $facet: {
+        data: [
+          {
+            $sort: { createdAt: -1 },
+          },
+          {
+            $skip: skip,
+          },
+          {
+            $limit: limit,
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'user',
+              foreignField: '_id',
+              as: 'user',
+            },
+          },
+          {
+            $lookup: {
+              from: 'hotels',
+              localField: 'hotel',
+              foreignField: '_id',
+              as: 'hotel',
+            },
+          },
+        ],
+        totalCount: [{ $count: 'totalCount' }],
+      },
+    },
+  ])
+    .then((transactions) =>
+      res.status(200).json({
+        data: transactions[0].data,
+        total: transactions[0].totalCount[0].totalCount,
+      })
+    )
     .catch((err) => {
       if (!err.statusCode) {
         err.statusCode = 500;
