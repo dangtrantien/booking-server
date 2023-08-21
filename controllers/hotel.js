@@ -294,15 +294,17 @@ exports.postTransaction = (req, res, next) => {
     .then((result) => {
       // Update room sau khi user booking
       result.room.map((r) => {
-        Room.findOne({ _id: r.roomId })
-          .then((room) => room.removeFromRoomNumbers(r.roomNumber))
-          .catch((err) => {
-            if (!err.statusCode) {
-              err.statusCode = 500;
-            }
+        Room.findById(r.roomId, function (err, hotelRoom) {
+          hotelRoom.removeFromRoomNumbers(r.roomNumber);
+        });
+        // .then((room) => )
+        // .catch((err) => {
+        //   if (!err.statusCode) {
+        //     err.statusCode = 500;
+        //   }
 
-            next(err);
-          });
+        //   next(err);
+        // });
       });
 
       res.status(200).json(result);
