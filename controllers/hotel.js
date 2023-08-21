@@ -1,5 +1,7 @@
 'use strict';
 
+const mongoose = require('mongoose');
+
 const Hotel = require('../models/Hotel');
 const Transaction = require('../models/Transaction');
 const Room = require('../models/Room');
@@ -294,7 +296,7 @@ exports.postTransaction = (req, res, next) => {
     .then((result) => {
       // Update room sau khi user booking
       result.room.map((r) => {
-        Room.find({ _id: { $in: r.roomId } })
+        Room.find({ _id: mongoose.Types.ObjectId(r.roomId) })
           .then((hotelRoom) => hotelRoom.removeFromRoomNumbers(r.roomNumber))
           .catch((err) => {
             if (!err.statusCode) {
