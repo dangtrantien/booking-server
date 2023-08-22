@@ -294,7 +294,7 @@ exports.postTransaction = (req, res, next) => {
     .then((result) => {
       // Update room sau khi user booking
       result.room.map((r) => {
-        Room.find({ _id: r.roomId })
+        Room.findById(r.roomId)
           .then((hotelRoom) => hotelRoom.removeFromRoomNumbers(r.roomNumber))
           .catch((err) => {
             if (!err.statusCode) {
