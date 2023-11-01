@@ -34,7 +34,7 @@ app.use((error, req, res, next) => {
 
 mongoose
   .connect(
-    `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@assignment-02.cjvlxke.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}`
+    `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_DATABASE}.mongodb.net/${process.env.MONGO_DEFAULT_COLLECTION}`
   )
-  .then(() => app.listen(process.env.PORT || 5000))
+  .then(() => app.listen(process.env.PORT))
   .catch((err) => console.log(err));
