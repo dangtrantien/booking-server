@@ -1,6 +1,6 @@
 ## Link Deploy
 
-This project was deploy here: [https://booking-server-6rik.onrender.com](https://booking-server-6rik.onrender.com)
+This project was deploy here: [https://booking-server-dangtrantien.vercel.app](https://booking-server-dangtrantien.vercel.app)
 
 ### This project has following structures:
 
