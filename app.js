@@ -18,6 +18,9 @@ app.use(compression());
 app.use(bodyParser.json());
 app.use(cors());
 
+app.get('/', (req, res, next) => {
+  res.send('<h1>Welcome to my server!</h1>');
+});
 app.use('/admin', adminRoutes);
 app.use('/hotels', hotelRoutes);
 app.use(userRoutes);
